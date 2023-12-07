@@ -25,7 +25,7 @@ from models import BigVSAN, MultiPeriodDiscriminator, MultiResolutionDiscriminat
     feature_loss, generator_loss, discriminator_loss
 from utils import plot_spectrogram, plot_spectrogram_clipped, scan_checkpoint, load_checkpoint, save_checkpoint, save_audio
 import torchaudio as ta
-from pesq import pesq
+# from pesq import pesq
 from tqdm import tqdm
 import auraloss
 
@@ -38,9 +38,10 @@ def train(rank, a, h):
                            world_size=h.dist_config['world_size'] * h.num_gpus, rank=rank)
 
     # set seed and device
-    torch.cuda.manual_seed(h.seed)
-    torch.cuda.set_device(rank)
-    device = torch.device('cuda:{:d}'.format(rank))
+    # torch.cuda.manual_seed(h.seed)
+    # torch.cuda.set_device(rank)
+    # device = torch.device('cuda:{:d}'.format(rank))
+    device = torch.device('cpu')
 
     # define BigVSAN generator
     generator = BigVSAN(h).to(device)
@@ -102,7 +103,10 @@ def train(rank, a, h):
     # define training and validation datasets
     # unseen_validation_filelist will contain sample filepaths outside the seen training & validation dataset
     # example: trained on LibriTTS, validate on VCTK
+    print(a)
     training_filelist, validation_filelist, list_unseen_validation_filelist = get_dataset_filelist(a)
+
+    print('training filelist:', training_filelist[:10], '\n\n\n', 'validation_filelist:', validation_filelist[:10], '\n\n\n', 'list_unseen_validation_filelist:', list_unseen_validation_filelist[:10], '\n\n\n')
 
     trainset = MelDataset(training_filelist, h, h.segment_size, h.n_fft, h.num_mels,
                           h.hop_size, h.win_size, h.sampling_rate, h.fmin, h.fmax, n_cache_reuse=0,
@@ -247,14 +251,18 @@ def train(rank, a, h):
     mpd.train()
     mrd.train()
     for epoch in range(max(0, last_epoch), a.training_epochs):
+        print('epoch = ', epoch, '. Current starting number of steps = ', steps)
         if rank == 0:
             start = time.time()
             print("Epoch: {}".format(epoch+1))
+            # print('sim, estou aqui')
 
         if h.num_gpus > 1:
             train_sampler.set_epoch(epoch)
 
         for i, batch in enumerate(train_loader):
+            #print('step = ', i, ' out of ', len(batch))
+            print('batch = ', i, ' out of ', len(training_filelist)/h.batch_size)
             if rank == 0:
                 start_b = time.time()
             x, y, _, y_mel = batch
@@ -392,6 +400,7 @@ def main():
     parser.add_argument('--group_name', default=None)
 
     parser.add_argument('--input_wavs_dir', default='LibriTTS')
+    parser.add_argument('--input_validation_wavs_dir', default='LibriTTS')
     parser.add_argument('--input_mels_dir', default='ft_dataset')
     parser.add_argument('--input_training_file', default='LibriTTS/train-full.txt')
     parser.add_argument('--input_validation_file', default='LibriTTS/val-full.txt')

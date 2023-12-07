@@ -1,3 +1,10 @@
 
 mls_portuguese_opus.tar.gz
 /mls_portuguese_opus
+/mls_portuguese_wav
+mls_portuguese_opus/mls_portuguese_opus/dev/audio/11995/10229/11995_10229_000000.opus
+mls_portuguese_opus/mls_portuguese_opus/train/segments.txt
+mls_portuguese_opus/mls_portuguese_opus/train/transcripts.txt
+/LibriTTS/dev-clean
+/LibriTTS
+/dev-clean

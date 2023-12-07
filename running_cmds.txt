@@ -1,0 +1,9 @@
+python train.py ^
+--config configs/bigvsan_mls_48khz_100band.json ^
+--input_wavs_dir mls_portuguese_wav\dev\audio ^
+--input_training_file mls_portuguese_wav\dev\transcripts.txt ^
+--input_validation_wavs_dir mls_portuguese_wav\test\audio ^
+--input_validation_file mls_portuguese_wav\test\transcripts.txt ^
+--list_input_unseen_wavs_dir mls_portuguese_wav\test ^
+--checkpoint_path exp/bigvsan/broken_likely ^
+--debug True
